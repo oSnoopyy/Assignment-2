@@ -29,8 +29,17 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
 
-      - name: Build and Test
-        run: mvn -B verify
+      - name: Build and Test with JaCoCo
+        run: mvn -B verify -Djacoco.skip=false
+
+      - name: Debug - List generated files
+        run: find target -type f
+
+      - name: Debug - Check JaCoCo Report Presence
+        run: ls -lh target/site/jacoco || echo "No JaCoCo directory found"
+
+      - name: Debug - Show test output (if any)
+        run: cat target/surefire-reports/*.txt || echo "No test output found"
 
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2
