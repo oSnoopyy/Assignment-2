@@ -32,18 +32,19 @@ jobs:
       - name: Build and Test with JaCoCo
         run: mvn -B verify -Djacoco.skip=false
 
-      - name: Debug - List generated files
-        run: find target -type f
+      # Convert JaCoCo XML to lcov format
+      - name: Convert JaCoCo XML to lcov
+        run: |
+          curl -s https://raw.githubusercontent.com/ecampidoglio/jacoco-to-lcov/main/jacoco-to-lcov -o jacoco-to-lcov
+          chmod +x jacoco-to-lcov
+          ./jacoco-to-lcov target/site/jacoco/jacoco.xml > target/site/jacoco/lcov.info
 
-      - name: Debug - Check JaCoCo Report Presence
-        run: ls -lh target/site/jacoco || echo "No JaCoCo directory found"
-
-      - name: Debug - Show test output (if any)
-        run: cat target/surefire-reports/*.txt || echo "No test output found"
+      - name: List coverage outputs
+        run: ls -lh target/site/jacoco || echo "No Jacoco directory found"
 
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2
         with:
-          github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          path-to-lcov: target/site/jacoco/jacoco.xml
-          base-path: .
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: target/site/jacoco/lcov.info
+
